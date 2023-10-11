@@ -1,16 +1,80 @@
 import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 function Form() {
+  const URL = 'https://opentdb.com/api.php';
   const [count, setCount] = useState(10);
   const [categoryId, setCategoryId] = useState('any');
   const [difficulty, setDifficulty] = useState('any');
   const [type, setType] = useState('any');
   const [results, setResults] = useState({ id: '', questions: [] });
 
-  function getQuestions() {
-    alert('I have questions??');
+  // https://opentdb.com/api.php?amount=10&category=17&difficulty=medium&type=multiple
+
+  function categoryIdIsOk() {
+    if (categoryId === 'any') {
+      return false;
+    }
+
+    const numberValue = Number(categoryId);
+
+    if (!isNaN(numberValue) && numberValue >= 9 && numberValue <= 32) {
+      return true;
+    }
+
+    return false;
   }
-  function showQuestions() {}
+
+  function difficultyIsOk() {
+    return ['easy', 'medium', 'hard'].includes(difficulty);
+  }
+
+  function typeisOk() {
+    return ['boolean', 'multiple'].includes(type);
+  }
+
+  function makeGameQuery() {
+    let params = '';
+
+    params += count > 0 && count < 51 ? `?amount=${count}` : ``;
+    params += categoryIdIsOk() ? `&category=${categoryId}` : ``;
+    params += difficultyIsOk() ? `&difficulty=${difficulty}` : ``;
+    params += typeisOk() ? `&type=${type}` : ``;
+
+    return URL + params;
+  }
+
+  function getQuestions() {
+    const gameQuery = makeGameQuery();
+
+    fetch(gameQuery)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data['response_code'] !== 0) {
+          const badResponse = {
+            id: 'ERROR',
+            questions: [
+              {
+                category: 'ERROR',
+                type: 'ERROR',
+                difficulty: 'ERROR',
+                question: 'ERROR',
+                answers: ['ERROR'],
+              },
+            ],
+          };
+          setResults(badResponse);
+        }
+        const tempResults = { ...results };
+        tempResults.id = uuidv4();
+        tempResults.questions = data['results'];
+        setResults(tempResults);
+      })
+      .catch((error) => setResults(error));
+  }
+  function showQuestions() {
+    return 'We gots questions. Youz got answers';
+  }
 
   return (
     <div>
@@ -104,9 +168,7 @@ function Form() {
       <br />
       <br />
       <div>
-        {results.questions.length > 0
-          ? showQuestions()
-          : "Let's Start a game!!"}
+        {results.questions.length > 0 ? showQuestions() : 'Start a game'}
       </div>
     </div>
   );
