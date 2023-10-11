@@ -7,11 +7,13 @@ function Form() {
   const [type, setType] = useState('any');
   const [results, setResults] = useState({ id: '', questions: [] });
 
+  function getQuestions() {
+    alert('I have questions??');
+  }
   function showQuestions() {}
 
   return (
     <div>
-      <h2 className="">API Helper</h2>
       <form action="" method="" className="">
         <label htmlFor="trivia_amount">Number of Questions:</label>
         <input
@@ -94,7 +96,7 @@ function Form() {
 
         <br />
 
-        <button className="" type="button">
+        <button className="" type="button" onClick={() => getQuestions()}>
           Game On!!
         </button>
       </form>
